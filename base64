@@ -9,11 +9,16 @@
 #
 # # Contributors
 # - Dave Eddy <ysap@daveeddy.com>
+# - RedStoneMango <redstonemango@outlook.com>
 
 LC_ALL=C
 
 DECODE='false'
-ALPHABET=( {A..Z} {a..z} {0..9} + / )
+URL='false'
+PADDING='true'
+
+ALPHABET_STANDARD=( {A..Z} {a..z} {0..9} + / )
+ALPHABET_URL=( {A..Z} {a..z} {0..9} - _ )
 
 block=()
 
@@ -50,13 +55,24 @@ process-block-decode() {
 			# no buffer, just return
 			return
 			;;
+        1)
+            # invalid padding, fail
+            fatal 'Invalid block padding'
+            ;;
+		2)
+            # restore padding by appending 2 '='
+            s3=-1
+            s4=-1
+			;;
+		3)
+            # restore padding by appending 1 '='
+            s4=-1
+			;;
 		4)
 			# this is correct, do nothing
 			;;
-		*)
-			fatal "invalid decode block length: $len"
-			;;
 	esac
+
 	if ((s1 < 0 || s2 < 0)); then
 		fatal 'invalid base64 block'
 	fi
@@ -114,11 +130,11 @@ process-byte-decode() {
 	elif ((byte == 61)); then
 		# '='
 		value=-1
-	elif ((byte == 43)); then
-		# '+'
+	elif { $URL && (( byte == 45 )); } || { ! $URL && (( byte == 43 )); }; then
+		# '+' (or '-' in Base64URL)
 		value=62
-	elif ((byte == 47)); then
-		# '/'
+	elif { $URL && (( byte == 95 )); } || { ! $URL && (( byte == 47 )); }; then
+		# '/' (or '_' in Base64URL)
 		value=63
 	elif ((byte >= 65 && byte <= 90)); then
 		# 'A' - 'Z'
@@ -143,7 +159,11 @@ process-byte-decode() {
 emit-alpha() {
 	local i=$1
 
-	printf '%c' "${ALPHABET[i]}"
+    if $URL; then
+        printf '%c' "${ALPHABET_URL[i]}"
+    else
+        printf '%c' "${ALPHABET_STANDARD[i]}"
+    fi
 }
 
 process-block-encode() {
@@ -175,13 +195,13 @@ process-block-encode() {
 		1)
 			emit-alpha "$s1"
 			emit-alpha "$s2"
-			printf '=='
+			$PADDING && printf '=='
 			;;
 		2)
 			emit-alpha "$s1"
 			emit-alpha "$s2"
 			emit-alpha "$s3"
-			printf '='
+			$PADDING && printf '='
 			;;
 		3)
 			emit-alpha "$s1"
@@ -258,9 +278,11 @@ process-input() {
 
 main() {
 	local OPTIND OPTARG opt
-	while getopts 'd' opt; do
+	while getopts 'dup' opt; do
 		case "$opt" in
 			d) DECODE='true';;
+			u) URL='true';;
+			p) PADDING='false';;
 			*) return 2;;
 		esac
 	done

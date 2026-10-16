@@ -14,6 +14,14 @@ Usage
 # decode
 ./base64 -d file.b64
 ./base64 -d < file.b64
+
+# encode for URLs
+./base64 -u file.txt
+./base64 -u < file.txt
+
+# encode without padding
+./base64 -p file.txt
+./base64 -p < file.txt
 ```
 
 YouTube
