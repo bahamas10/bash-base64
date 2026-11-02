@@ -21,8 +21,9 @@ YouTube
 
 Watch me build this live on YouTube.
 
-<a href="https://www.youtube.com/watch?v=yICvuBin6Mg"><img alt="Bash base64 YouTube
-Thumbnail" src="https://files.daveeddy.com/ysap/bash-base64-thumbnail.jpg"
+<a href="https://www.youtube.com/watch?v=yICvuBin6Mg"><img
+alt="Bash base64 YouTube Thumbnail"
+src="https://i.ytimg.com/vi/yICvuBin6Mg/maxresdefault.jpg"
 /></a>
 
 License
